@@ -30,7 +30,7 @@ public class Graph<T> implements IGraph<T> {
 
     @Override
     public void addVertex(T vertex) {
-        if (!adjacencyMap.containsKey(vertex)) {
+        if (vertex != null && !adjacencyMap.containsKey(vertex)) {
             ConcurrentLinkedQueue<IEdge<T>> edges = new ConcurrentLinkedQueue<>();
             adjacencyMap.put(vertex, edges);
         }
@@ -43,7 +43,8 @@ public class Graph<T> implements IGraph<T> {
 
     @Override
     public void addEdge(T source, T destination, int weight) {
-        if (adjacencyMap.containsKey(source) && adjacencyMap.containsKey(destination)) {
+        if (source != null && destination != null &&
+                adjacencyMap.containsKey(source) && adjacencyMap.containsKey(destination)) {
             IEdge<T> newSrcVertexEdge = new Edge<>(source, destination, weight);
             Queue<IEdge<T>> srcVertexEdges = adjacencyMap.get(source);
             srcVertexEdges.add(newSrcVertexEdge);
@@ -57,6 +58,9 @@ public class Graph<T> implements IGraph<T> {
 
     @Override
     public LinkedList<IEdge<T>> getPath(T source, T destination) {
+        if (source == null || destination == null) {
+            return new LinkedList<>();
+        }
         Map<T, VertexMinDistance<T>> vertexMinDistanceMap = new HashMap<>(adjacencyMap.size());
         PriorityQueue<VertexMinDistance<T>> sortedByMinDistanceQueue = new PriorityQueue<>(adjacencyMap.size());
         for (T vertex : adjacencyMap.keySet()) {
@@ -100,6 +104,9 @@ public class Graph<T> implements IGraph<T> {
 
     @Override
     public void traverseGraph(Consumer<T> traverseFunction) {
+        if (traverseFunction == null) {
+            return;
+        }
         Queue<T> vertexQueue = new LinkedList<>();
         Map<T, Boolean> visitedVertexesMap = new HashMap<>();
         Map.Entry<T, ConcurrentLinkedQueue<IEdge<T>>> entry = adjacencyMap.entrySet().iterator().next();
