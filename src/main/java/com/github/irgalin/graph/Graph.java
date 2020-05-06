@@ -5,12 +5,24 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
 
+/**
+ * Concurrent implementation of {@link IGraph}.
+ */
 public class Graph<T> implements IGraph<T> {
 
-    private final Map<T, ConcurrentLinkedQueue<IEdge<T>>> adjacencyMap;
+    /**
+     * Concurrent data structure that represents the graph.
+     */
+    private final ConcurrentHashMap<T, ConcurrentLinkedQueue<IEdge<T>>> adjacencyMap;
 
     private final boolean directed;
 
+    /**
+     * Initializes directed or undirected graph.
+     *
+     * @param directed if this param is set to {@code true} the constructor initializes a directed graph,
+     *                 otherwise it initializes an undirected graph.
+     */
     public Graph(boolean directed) {
         this.directed = directed;
         this.adjacencyMap = new ConcurrentHashMap<>();
@@ -31,16 +43,14 @@ public class Graph<T> implements IGraph<T> {
 
     @Override
     public void addEdge(T source, T destination, int weight) {
-        if (adjacencyMap.containsKey(source)) {
-            IEdge<T> edge = new Edge<T>(source, destination, weight);
-            Queue<IEdge<T>> edges = adjacencyMap.get(source);
-            edges.add(edge);
-        }
-        if (!directed) {
-            if (adjacencyMap.containsKey(destination)) {
-                Queue<IEdge<T>> edges = adjacencyMap.get(destination);
-                Edge<T> edge = new Edge<T>(destination, source, weight);
-                edges.add(edge);
+        if (adjacencyMap.containsKey(source) && adjacencyMap.containsKey(destination)) {
+            IEdge<T> newSrcVertexEdge = new Edge<>(source, destination, weight);
+            Queue<IEdge<T>> srcVertexEdges = adjacencyMap.get(source);
+            srcVertexEdges.add(newSrcVertexEdge);
+            if (!directed) {
+                Queue<IEdge<T>> destVertexEdges = adjacencyMap.get(destination);
+                Edge<T> newDestVertexEdge = new Edge<>(destination, source, weight);
+                destVertexEdges.add(newDestVertexEdge);
             }
         }
     }
@@ -50,7 +60,7 @@ public class Graph<T> implements IGraph<T> {
         Map<T, VertexMinDistance<T>> vertexMinDistanceMap = new HashMap<>(adjacencyMap.size());
         PriorityQueue<VertexMinDistance<T>> sortedByMinDistanceQueue = new PriorityQueue<>(adjacencyMap.size());
         for (T vertex : adjacencyMap.keySet()) {
-            vertexMinDistanceMap.put(vertex, new VertexMinDistance<T>(vertex, Integer.MAX_VALUE));
+            vertexMinDistanceMap.put(vertex, new VertexMinDistance<>(vertex, Integer.MAX_VALUE));
         }
         vertexMinDistanceMap.get(source).minDistance = 0;
         sortedByMinDistanceQueue.offer(vertexMinDistanceMap.get(source));
@@ -72,7 +82,7 @@ public class Graph<T> implements IGraph<T> {
                                                Map<T, VertexMinDistance<T>> vertexMinDistanceMap) {
         Queue<IEdge<T>> edges = adjacencyMap.get(currentVertexMinDistance.vertex);
         for (IEdge<T> edge : edges) {
-            T neighborVertex = (T) edge.getDest();
+            T neighborVertex = edge.getDest();
             VertexMinDistance<T> neighborVertexMinDistance = vertexMinDistanceMap.get(neighborVertex);
             if (!neighborVertexMinDistance.visited) {
                 int newNeighborMinDistance = currentVertexMinDistance.minDistance + edge.getWeight();
@@ -89,18 +99,18 @@ public class Graph<T> implements IGraph<T> {
     }
 
     @Override
-    public void traverseGraph(Consumer<T> consumer) {
+    public void traverseGraph(Consumer<T> traverseFunction) {
         Queue<T> vertexQueue = new LinkedList<>();
-        Map<T, Boolean> visitedMap = new HashMap<>();
+        Map<T, Boolean> visitedVertexesMap = new HashMap<>();
         Map.Entry<T, ConcurrentLinkedQueue<IEdge<T>>> entry = adjacencyMap.entrySet().iterator().next();
         vertexQueue.offer(entry.getKey());
         while (!vertexQueue.isEmpty()) {
             T currentVertex = vertexQueue.poll();
-            if (visitedMap.get(currentVertex) != null && visitedMap.get(currentVertex)) {
+            if (visitedVertexesMap.get(currentVertex) != null && visitedVertexesMap.get(currentVertex)) {
                 continue;
             }
-            visitedMap.put(currentVertex, true);
-            consumer.accept(currentVertex);
+            visitedVertexesMap.put(currentVertex, true);
+            traverseFunction.accept(currentVertex);
             ConcurrentLinkedQueue<IEdge<T>> edges = adjacencyMap.get(currentVertex);
             for (IEdge<T> edge : edges) {
                 vertexQueue.offer(edge.getDest());
@@ -110,17 +120,28 @@ public class Graph<T> implements IGraph<T> {
     }
 
     /**
+     * Represents the minimum distance from some source vertex to the given vertex.
      *
-     * @param <T>
+     * @param <T> the given vertex type.
      */
     private static class VertexMinDistance<T> implements Comparable<VertexMinDistance<T>> {
 
+        /**
+         * Any given vertex in the graph.
+         */
         private final T vertex;
-
+        /**
+         * The minimum possible distance (sum of edge weights) between some source vertex and given vertex.
+         */
         private Integer minDistance;
-
+        /**
+         * The shortest path (with minimum weight) between some source vertex and given vertex.
+         */
         private LinkedList<IEdge<T>> shortestPath;
 
+        /**
+         * Shows if the given vertex's been already traversed or not.
+         */
         private boolean visited;
 
         public VertexMinDistance(T vertex, int minDistance) {

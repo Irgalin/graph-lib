@@ -2,18 +2,19 @@ package com.github.irgalin.graph;
 
 import java.util.Objects;
 
-public class Edge<T> implements IEdge {
+/**
+ * Implementation of {@link IEdge}.
+ */
+public class Edge<T> implements IEdge<T> {
 
-    private T source;
+    private final T source;
 
-    private T dest;
+    private final T dest;
 
-    private int weight;
+    private final int weight;
 
     public Edge(T source, T dest) {
-        this.source = source;
-        this.dest = dest;
-        this.weight = 1;
+        this(source, dest, 1);
     }
 
     public Edge(T source, T dest, int weight) {
