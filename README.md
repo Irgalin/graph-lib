@@ -1,6 +1,6 @@
 # Simple graph library
 
-Library that allows to create a simple graph data structure and perform operations on it. 
+Library that allows to create a simple concurrent data structure that represents a graph and perform operations on it.
 
 ## Building the library jar using Maven
 
@@ -26,8 +26,10 @@ import java.util.LinkedList;
 public class GraphUsageExample {
 
     public static void main(String[] args) {
+    
         // initializing an undirected graph with the integer type vertexes
         IGraph<Integer> undirectedGraph = new Graph<>(false);
+        
         // adding vertexes to the graph
         undirectedGraph.addVertex(0);
         undirectedGraph.addVertex(1);
@@ -35,6 +37,7 @@ public class GraphUsageExample {
         undirectedGraph.addVertex(3);
         undirectedGraph.addVertex(4);
         undirectedGraph.addVertex(5);
+        
         // connecting existing vertexes with simple (non-weighted) edges
         undirectedGraph.addEdge(0, 1);
         undirectedGraph.addEdge(0, 2);
