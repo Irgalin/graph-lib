@@ -6,14 +6,15 @@
 
     <groupId>com.github.irgalin</groupId>
     <artifactId>graph-lib</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.0.1</version>
     <name>graph-lib</name>
     <description>
-        Library that allows to create a graph data structure and perform operations on it.
+        Library that allows to create a simple graph data structure and perform operations on it.
     </description>
+    <packaging>jar</packaging>
 
     <properties>
-        <java.version>1.11</java.version>
+        <java.version>1.8</java.version>
     </properties>
 
     <dependencies>
@@ -30,6 +31,10 @@
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.1</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                </configuration>
             </plugin>
         </plugins>
     </build>
